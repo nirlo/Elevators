@@ -48,13 +48,13 @@ public class ElevatorImp extends Observable implements Elevator {
 	/**
 	 * The Moving state of the elevator.
 	 */
-	private MovingState state;
+	private volatile MovingState state;
 
 	/**
 	 * The Panel interface for the elevator, user in simulation uses this
 	 * to request stops.
 	 */
-	private ElevatorPanel panel;
+	private final ElevatorPanel panel;
 
 	/**
 	 * The limit to how many persons can be in the elevator at once.
@@ -76,6 +76,8 @@ public class ElevatorImp extends Observable implements Elevator {
 	 * MAX_CAPACITY_PERSONS
 	 */
 	private int capacity;
+	
+	private final int ID;
 
 	/**
 	 * 
@@ -89,8 +91,9 @@ public class ElevatorImp extends Observable implements Elevator {
 	 * @param 	panel					The control for user inside the elevator
 	 * 									to request stops.
 	 */
-	public ElevatorImp(double CAPACITY_PERSONS, ElevatorPanel panel) {
+	public ElevatorImp(double CAPACITY_PERSONS, ElevatorPanel panel, int id) {
 		MAX_CAPACITY_PERSONS = CAPACITY_PERSONS;
+		ID = id;
 		this.panel = panel;
 		currentFloor = 0;
 		state = MovingState.Idle;
@@ -102,7 +105,7 @@ public class ElevatorImp extends Observable implements Elevator {
 	 * amount of power. Iterates through the amount of moves needed to reach
 	 * destination.
 	 * 
-	 * @param	int						The destination floor
+	 * @param	int						The next floor for the elevator to move to
 	 */
 	@Override
 	public void moveTo(int floor) throws UnsupportedOperationException {
@@ -252,26 +255,31 @@ public class ElevatorImp extends Observable implements Elevator {
 
 	@Override
 	public boolean isIdle() {
-		// TODO Auto-generated method stub
-		return false;
+		return(state == MovingState.Idle);
 	}
 
 	@Override
 	public int id() {
-		// TODO Auto-generated method stub
-		return 0;
+		return ID;
 	}
 
 	@Override
 	public void requestStops(int... floors) {
-		// TODO Auto-generated method stub
-		
+		panel.requestStops(this, floors);
 	}
 
 	@Override
 	public void addObservers(Observer observer) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public boolean equals(Object obj) {
+		if(obj instanceof ElevatorImp) {
+			ElevatorImp b = (ElevatorImp) obj; 
+			return (this.ID == b.ID);
+		}
+		return false;	
 	}
 
 }

@@ -1,5 +1,18 @@
 package elevatorsystem;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+
 import elevator.Elevator;
 import elevator.MovingState;
 import simulator.Observer;
@@ -19,7 +32,9 @@ import simulator.Observer;
  * 				move between. Part of the Control.
  *
  */
-public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
+public class ElevatorSystemImp extends Thread implements ElevatorSystem, ElevatorPanel{
+	
+	private final Object REQUEST_LOCK = new Object();
 
 	/**
 	 * The top floor of the elevator system.
@@ -36,6 +51,32 @@ public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
 	 */
 	private Elevator elevator;
 
+	private boolean shutdown = false;
+
+	private ExecutorService es;
+
+	private Map<Elevator, List<Integer>> stops;
+	
+	private MovingState callDirection;
+
+	private Runnable run = () -> {
+		
+		AtomicInteger counters[] = new AtomicInteger[stops.size()];
+		for( int i = 0; i < counters.length; i++) {
+			counters[i] = new AtomicInteger();
+		}	
+		while(!shutdown) {
+			for( Elevator e: stops.keySet()) {
+				if( !e.isIdle() || counters[e.id()].get() != 0) {
+					continue;
+				}
+				synchronized(REQUEST_LOCK) {
+
+				}
+			}
+		}
+	};
+
 	/**
 	 * Constructor. Sets the MAX_FLOOR and MIN_FLOOR.
 	 * 
@@ -45,6 +86,8 @@ public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
 	public ElevatorSystemImp(int MIN_FLOOR, int MAX_FLOOR) {
 		this.MAX_FLOOR = MAX_FLOOR;
 		this.MIN_FLOOR = MIN_FLOOR;
+		es = Executors.newCachedThreadPool();
+		stops = new HashMap<>();
 	}
 
 	/**
@@ -53,6 +96,8 @@ public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
 	public ElevatorSystemImp() {
 		this(0, 4);
 	}
+
+
 
 	@Override
 	public void requestStop(int floor, Elevator elevator) {
@@ -79,22 +124,36 @@ public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
 	 * @param 	state			State to be set to
 	 */
 	private void call(int floor, MovingState state) {
-		elevator.setState(state);
-		elevator.requestStop(floor);
-	}
-	/**
-	 * Checks to see if an elevator exists in the system.
-	 * 
-	 * @return	boolean			Whether an elevator exists in the system
-	 */
-	private boolean checkForElevator() {
-		return !(elevator == null);
+		Callable<Elevator> callElevator = () ->{
+			Elevator chosen = null;
+			int spaceBtwn = MAX_FLOOR;
+			for(Elevator e: stops.keySet()) {
+				if(e.isIdle()) {
+					if(chosen != null && (Math.abs(e.getFloor() - floor)) < spaceBtwn) {
+						chosen = e;
+						spaceBtwn = (Math.abs(e.getFloor() - floor));
+					}
+					else continue;
+					chosen = e;
+				}
+			}
+			return chosen;
+		};
+		try {
+			es.submit(callElevator).get().moveTo(floor);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		callDirection = state;
 	}
 
 	@Override
 	public void addElevator(Elevator elevator) {
-		if(!checkForElevator())
-			this.elevator = elevator;	
+		stops.put(elevator, new LinkedList<Integer>());
 	}
 
 	@Override
@@ -124,33 +183,37 @@ public class ElevatorSystemImp implements ElevatorSystem, ElevatorPanel {
 
 	@Override
 	public int getElevatorCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return stops.size();
 	}
 
 	@Override
 	public void addObserver(Observer observer) {
-		// TODO Auto-generated method stub
-		
+		stops.keySet()
+		.stream()
+		.forEach(e -> e.addObservers(observer));
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-		
+		shutdown = true;
+		es.shutdown();
 	}
+
 
 	@Override
 	public void start() {
-		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
-		// TODO Auto-generated method stub
-		
+
+		List<Integer> l = stops.get(elevator);
+		IntStream.of(floors).forEach(f->l.add(f));
+		es.submit(run);
 	}
+
+
 
 
 }
