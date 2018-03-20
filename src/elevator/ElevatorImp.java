@@ -140,12 +140,14 @@ public class ElevatorImp extends Observable implements Elevator {
 					UnsupportedOperationException e = new UnsupportedOperationException();
 					throw e;
 				} 
+				
+				Thread.sleep(1000);
 
 				setChanged();
 				notifyObservers(floor);
 
 			}
-		}catch(UnsupportedOperationException e) {
+		}catch(UnsupportedOperationException | InterruptedException e) {
 			e.printStackTrace();
 		}	
 
@@ -249,6 +251,7 @@ public class ElevatorImp extends Observable implements Elevator {
 			list.add((Integer)getFloor());
 			list.add((Integer)floor);
 			list.add((Integer)power);
+			list.add(ID);
 			o.update(list);
 		}
 	}
@@ -268,11 +271,7 @@ public class ElevatorImp extends Observable implements Elevator {
 		panel.requestStops(this, floors);
 	}
 
-	@Override
-	public void addObservers(Observer observer) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 	
 	public boolean equals(Object obj) {
 		if(obj instanceof ElevatorImp) {
@@ -280,6 +279,11 @@ public class ElevatorImp extends Observable implements Elevator {
 			return (this.ID == b.ID);
 		}
 		return false;	
+	}
+
+	@Override
+	public void addObservers(Observer observer) {
+		addObserver(observer);
 	}
 
 }

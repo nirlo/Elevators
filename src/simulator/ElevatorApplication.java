@@ -6,11 +6,10 @@ import java.util.Queue;
 
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.beans.Observable;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -52,88 +51,79 @@ public class ElevatorApplication extends Application implements Observer {
 		 * Panes that organize the GUI
 		 */
 		BorderPane root = new BorderPane();
-		VBox elevator = new VBox();
-		VBox info = new VBox();
-		//Next lines fill the elevator VBox with the visual representation of the floors
 		int floors = 21;
 
-		for(int i=0; i<floors;i++) {
-			elevator.getChildren().add(new HBox());
-			elevator.getChildren().get(i).setId((i == 20) ? "elevator":"empty");
+		HBox center = new HBox();
+		Button start = new Button("Start");
+
+		for(int i = 0; i < sim.getElevatorCount(); i++) {
+			Text title = new Text("Elevator " + i);
+			VBox elevator = new VBox();
+			VBox info = new VBox();
+
+			for (int j = 0; j <floors; i++) {
+				elevator.getChildren().add(new HBox());
+				elevator.getChildren().get(i).setId((i == 20) ? "elevator":"empty");
+			}
+
+			info.getChildren().addAll(new Text("Current Floor: "), new Text("0"), new Text("Requested Floor: "),
+					new Text("0"), new Text("Power Consumed: "), new Text("0"));
+
+			center.getChildren().add(new VBox(title, new HBox(elevator, info)));
 		}
 
-		/**
-		 * Check box controls the animation of the elevator, either restarting the elevator
-		 * animation or stopping it mid sequence.
-		 */
-		CheckBox cb = new CheckBox("Animate");
-		cb.setSelected(false);
+		root.setCenter(center);
+		root.setBottom(start);
 
-		//Sets the info panel
-		info.getChildren().addAll(new Text("Current Floor: "), new Text("0"), new Text("Requested Floor: "),
-				new Text("0"), new Text("Power Consumed: "), new Text("0"), cb);
 
-		root.setCenter(elevator);
-		root.setRight(info);
 
 		Scene scene = new Scene(root, 300, 600);
 		scene.getStylesheets().add("simulator/elevator.css");
 		mainStage.setScene(scene);
-		sim.start();
 		mainStage.show();
+		
+		start.setOnAction(e -> {
+			sim.start();
+		});
 
-		ObservableList<Node> elevatorFloors = elevator.getChildren();
 
 		AnimationTimer elevatorAnimation = new AnimationTimer() {
 
-			private long lastUpdate = 0;
+
 			@Override
 			public void handle(long now) {
 
 				//Sets the framerate of the animation
-				if(now - lastUpdate >= 500_000_70) {
-					//Gets the data from queue to be used to set visualizations
-					List<Integer> current = queue.poll();
-					
-					/**
-					 * Goes through the visuals of floors and places the currentFloor of the elevator
-					 * and the target floor. Uses length - i so the visual places the 0th floor at the
-					 * bottom of the visual
-					 */
-					int length = 20;
-					for(int i = 0; i < length+1; i++){
-						if(length -i == length - current.get(0))
-							elevatorFloors.get(length - i).setId("elevator");
-						else if(length - i == length - current.get(1))
-							elevatorFloors.get(length - i).setId("target");
-						else
-							elevatorFloors.get(length - i).setId("empty");
-					}
-					//Sets the information passed in from elevatorimp
-					((Text) info.getChildren().get(1)).setText(current.get(0).toString());
-					((Text) info.getChildren().get(3)).setText(current.get(1).toString());
-					((Text) info.getChildren().get(5)).setText(current.get(2).toString());
-					lastUpdate = now ;
 
-					//adds the information to the end of the queue. This allows the animation to loop
-					queue.add(current);
-					
-					//Ends the animation at the preset power usage
-					if(current.get(2) == 68)
-						cb.setSelected(false);
+				//Gets the data from queue to be used to set visualizations
 
+				ObservableList<Node> elevators = center.getChildren();
+
+				List<Integer> current = queue.poll();
+				VBox wholeView = (VBox) elevators.get(current.get(0));
+				HBox infoView = (HBox) wholeView.getChildren().get(1);
+				VBox fls = (VBox) infoView.getChildren().get(0);
+				VBox info = (VBox) infoView.getChildren().get(1);
+				ObservableList<Node> elevatorFloors = fls.getChildren();
+
+				int length = 20;
+				for(int i = 0; i < length+1; i++){
+					if(length -i == length - current.get(0))
+						elevatorFloors.get(length - i).setId("elevator");
+					else if(length - i == length - current.get(1))
+						elevatorFloors.get(length - i).setId("target");
+					else
+						elevatorFloors.get(length - i).setId("empty");
 				}
-			}
+				//Sets the information passed in from elevatorimp
+				((Text) info.getChildren().get(1)).setText(current.get(0).toString());
+				((Text) info.getChildren().get(3)).setText(current.get(1).toString());
+				((Text) info.getChildren().get(5)).setText(current.get(2).toString());
 
+			}
 		};
-		cb.selectedProperty().addListener((Observable o) -> {
-			if (cb.isSelected()) {
-				elevatorAnimation.start();
-			} else {
-				elevatorAnimation.stop();
-			}
-		});
 
+		elevatorAnimation.start();
 
 
 	}
@@ -142,7 +132,7 @@ public class ElevatorApplication extends Application implements Observer {
 		launch();
 	}
 
-	
+
 	@Override
 	public void update(List<Integer> list) {
 		queue.add(list);

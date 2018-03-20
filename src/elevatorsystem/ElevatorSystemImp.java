@@ -31,7 +31,7 @@ import simulator.Observer;
  *
  */
 public class ElevatorSystemImp extends Thread implements ElevatorSystem, ElevatorPanel{
-	
+
 	private final Object REQUEST_LOCK = new Object();
 
 	/**
@@ -54,11 +54,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private ExecutorService es;
 
 	private Map<Elevator, List<Integer>> stops;
-	
+
 	private MovingState callDirection;
 
 	private Runnable run = () -> {
-		
+
 		AtomicInteger counters[] = new AtomicInteger[stops.size()];
 		for( int i = 0; i < counters.length; i++) {
 			counters[i] = new AtomicInteger();
@@ -70,8 +70,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				}
 				synchronized(REQUEST_LOCK) {
 
+					List<Integer> l = stops.get(e);
+					e.moveTo(l.remove(0));
 				}
 			}
+			
 		}
 	};
 
@@ -105,13 +108,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public Elevator callUp(int floor) {
-		call(floor, MovingState.SlowUp);
+		call(floor, MovingState.Up);
 		return elevator;
 	}
 
 	@Override
 	public Elevator callDown(int floor) {
-		call(floor, MovingState.SlowDown);
+		call(floor, MovingState.Down);
 		return elevator;
 	}
 	/**
@@ -138,12 +141,12 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 			return chosen;
 		};
 		try {
-			es.submit(callElevator).get().moveTo(floor);
+			synchronized(REQUEST_LOCK) {
+				es.submit(callElevator).get().moveTo(floor);
+			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		callDirection = state;
@@ -200,19 +203,21 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public void start() {
-
+		es.submit(run);
 	}
 
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
 
-		List<Integer> l = stops.get(elevator);
-		IntStream.of(floors).forEach(f->l.add(f));
-		if(callDirection == MovingState.Down)
-			QuickSort.sortDesc(l, l.size());
-		else 
-			QuickSort.sort(l, l.size());
-		es.submit(run);
+		synchronized(REQUEST_LOCK) {
+			List<Integer> l = stops.get(elevator);
+			IntStream.of(floors).forEach(f->l.add(f));
+			
+			if(callDirection == MovingState.Up)
+				QuickSort.sort(l, l.size());
+			else
+				QuickSort.sortDesc(l, l.size());
+		}
 	}
 
 
