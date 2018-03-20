@@ -4,12 +4,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -33,7 +31,7 @@ import simulator.Observer;
  *
  */
 public class ElevatorSystemImp extends Thread implements ElevatorSystem, ElevatorPanel{
-	
+
 	private final Object REQUEST_LOCK = new Object();
 
 	/**
@@ -56,11 +54,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private ExecutorService es;
 
 	private Map<Elevator, List<Integer>> stops;
-	
+
 	private MovingState callDirection;
 
 	private Runnable run = () -> {
-		
+
 		AtomicInteger counters[] = new AtomicInteger[stops.size()];
 		for( int i = 0; i < counters.length; i++) {
 			counters[i] = new AtomicInteger();
@@ -72,6 +70,17 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				}
 				synchronized(REQUEST_LOCK) {
 
+					List<Integer> l = stops.get(e);
+
+					if(callDirection == MovingState.Up)
+						QuickSort.sort(l, l.size());
+					else
+						QuickSort.sortDesc(l, l.size());
+
+					for(int j: l) {
+						e.moveTo(j);
+						l.remove(j);
+					}
 				}
 			}
 		}
@@ -107,13 +116,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public Elevator callUp(int floor) {
-		call(floor, MovingState.SlowUp);
+		call(floor, MovingState.Up);
 		return elevator;
 	}
 
 	@Override
 	public Elevator callDown(int floor) {
-		call(floor, MovingState.SlowDown);
+		call(floor, MovingState.Down);
 		return elevator;
 	}
 	/**
@@ -208,8 +217,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
 
-		List<Integer> l = stops.get(elevator);
-		IntStream.of(floors).forEach(f->l.add(f));
+		synchronized(REQUEST_LOCK) {
+			List<Integer> l = stops.get(elevator);
+			IntStream.of(floors).forEach(f->l.add(f));
+		}
+
 		es.submit(run);
 	}
 
