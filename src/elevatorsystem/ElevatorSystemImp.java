@@ -31,7 +31,7 @@ import simulator.Observer;
  *
  */
 public class ElevatorSystemImp extends Thread implements ElevatorSystem, ElevatorPanel{
-
+	
 	private final Object REQUEST_LOCK = new Object();
 
 	/**
@@ -54,11 +54,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private ExecutorService es;
 
 	private Map<Elevator, List<Integer>> stops;
-
+	
 	private MovingState callDirection;
 
 	private Runnable run = () -> {
-
+		
 		AtomicInteger counters[] = new AtomicInteger[stops.size()];
 		for( int i = 0; i < counters.length; i++) {
 			counters[i] = new AtomicInteger();
@@ -70,17 +70,6 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				}
 				synchronized(REQUEST_LOCK) {
 
-					List<Integer> l = stops.get(e);
-
-					if(callDirection == MovingState.Up)
-						QuickSort.sort(l, l.size());
-					else
-						QuickSort.sortDesc(l, l.size());
-
-					for(int j: l) {
-						e.moveTo(j);
-						l.remove(j);
-					}
 				}
 			}
 		}
@@ -116,13 +105,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public Elevator callUp(int floor) {
-		call(floor, MovingState.Up);
+		call(floor, MovingState.SlowUp);
 		return elevator;
 	}
 
 	@Override
 	public Elevator callDown(int floor) {
-		call(floor, MovingState.Down);
+		call(floor, MovingState.SlowDown);
 		return elevator;
 	}
 	/**
@@ -217,11 +206,12 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
 
-		synchronized(REQUEST_LOCK) {
-			List<Integer> l = stops.get(elevator);
-			IntStream.of(floors).forEach(f->l.add(f));
-		}
-
+		List<Integer> l = stops.get(elevator);
+		IntStream.of(floors).forEach(f->l.add(f));
+		if(callDirection == MovingState.Down)
+			QuickSort.sortDesc(l, l.size());
+		else 
+			QuickSort.sort(l, l.size());
 		es.submit(run);
 	}
 
