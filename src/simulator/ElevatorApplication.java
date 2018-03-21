@@ -55,15 +55,15 @@ public class ElevatorApplication extends Application implements Observer {
 
 		HBox center = new HBox();
 		Button start = new Button("Start");
+		Button stop = new Button("Stop");
 
 		for(int i = 0; i < sim.getElevatorCount(); i++) {
 			Text title = new Text("Elevator " + i);
 			VBox elevator = new VBox();
 			VBox info = new VBox();
-
-			for (int j = 0; j <floors; i++) {
+			for (int j = 0; j <floors; j++) {
 				elevator.getChildren().add(new HBox());
-				elevator.getChildren().get(i).setId((i == 20) ? "elevator":"empty");
+				elevator.getChildren().get(j).setId((j == 20) ? "elevator":"empty");
 			}
 
 			info.getChildren().addAll(new Text("Current Floor: "), new Text("0"), new Text("Requested Floor: "),
@@ -73,69 +73,71 @@ public class ElevatorApplication extends Application implements Observer {
 		}
 
 		root.setCenter(center);
-		root.setBottom(start);
+		HBox bottom = new HBox(start, stop);
+		root.setBottom(bottom);
 
 
 
-		Scene scene = new Scene(root, 300, 600);
+		Scene scene = new Scene(root, 1200, 640);
 		scene.getStylesheets().add("simulator/elevator.css");
 		mainStage.setScene(scene);
 		mainStage.show();
-		
+
 		start.setOnAction(e -> {
 			sim.start();
+			});
+		
+		stop.setOnAction(e -> {
+			sim.shutdown();
 		});
-
-
-		AnimationTimer elevatorAnimation = new AnimationTimer() {
-
+		
+		new AnimationTimer() {
 
 			@Override
 			public void handle(long now) {
+				
+				if(!queue.isEmpty()) {
+					ObservableList<Node> elevators = center.getChildren();
 
-				//Sets the framerate of the animation
+					List<Integer> current = queue.poll();
+					VBox wholeView = (VBox) elevators.get(current.get(0));
+					HBox infoView = (HBox) wholeView.getChildren().get(1);
+					VBox fls = (VBox) infoView.getChildren().get(0);
+					VBox info = (VBox) infoView.getChildren().get(1);
+					ObservableList<Node> elevatorFloors = fls.getChildren();
 
-				//Gets the data from queue to be used to set visualizations
+					int length = 20;
+					for(int i = 0; i < length+1; i++){
+						if(length -i == length - current.get(0))
+							elevatorFloors.get(length - i).setId("elevator");
+						else if(length - i == length - current.get(1))
+							elevatorFloors.get(length - i).setId("target");
+						else
+							elevatorFloors.get(length - i).setId("empty");
+					}
+					//Sets the information passed in from elevatorimp
+					((Text) info.getChildren().get(1)).setText(current.get(0).toString());
+					((Text) info.getChildren().get(3)).setText(current.get(1).toString());
+					((Text) info.getChildren().get(5)).setText(current.get(2).toString());
 
-				ObservableList<Node> elevators = center.getChildren();
-
-				List<Integer> current = queue.poll();
-				VBox wholeView = (VBox) elevators.get(current.get(0));
-				HBox infoView = (HBox) wholeView.getChildren().get(1);
-				VBox fls = (VBox) infoView.getChildren().get(0);
-				VBox info = (VBox) infoView.getChildren().get(1);
-				ObservableList<Node> elevatorFloors = fls.getChildren();
-
-				int length = 20;
-				for(int i = 0; i < length+1; i++){
-					if(length -i == length - current.get(0))
-						elevatorFloors.get(length - i).setId("elevator");
-					else if(length - i == length - current.get(1))
-						elevatorFloors.get(length - i).setId("target");
-					else
-						elevatorFloors.get(length - i).setId("empty");
 				}
-				//Sets the information passed in from elevatorimp
-				((Text) info.getChildren().get(1)).setText(current.get(0).toString());
-				((Text) info.getChildren().get(3)).setText(current.get(1).toString());
-				((Text) info.getChildren().get(5)).setText(current.get(2).toString());
-
 			}
-		};
+			
+		}.start();
 
-		elevatorAnimation.start();
+		}
+	
+	
 
+
+		public static void main(String[] args) {
+			launch();
+		}
+
+
+		@Override
+		public void update(List<Integer> list) {
+			queue.add(list);
+		}
 
 	}
-
-	public static void main(String[] args) {
-		launch();
-	}
-
-
-	@Override
-	public void update(List<Integer> list) {
-		queue.add(list);
-	}
-
-}

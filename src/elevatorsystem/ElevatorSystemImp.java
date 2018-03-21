@@ -8,7 +8,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 import elevator.Elevator;
@@ -58,18 +57,14 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private MovingState callDirection;
 
 	private Runnable run = () -> {
-
-		AtomicInteger counters[] = new AtomicInteger[stops.size()];
-		for( int i = 0; i < counters.length; i++) {
-			counters[i] = new AtomicInteger();
-		}	
 		while(!shutdown) {
+			System.out.println("Made it to while loop in run");
 			for( Elevator e: stops.keySet()) {
-				if( !e.isIdle() || counters[e.id()].get() != 0) {
+				if( !e.isIdle() || stops.get(e).isEmpty()) {
 					continue;
 				}
 				synchronized(REQUEST_LOCK) {
-
+					System.out.println("I made it to moveTo");
 					List<Integer> l = stops.get(e);
 					e.moveTo(l.remove(0));
 				}
@@ -130,12 +125,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 			int spaceBtwn = MAX_FLOOR;
 			for(Elevator e: stops.keySet()) {
 				if(e.isIdle()) {
-					if(chosen != null && (Math.abs(e.getFloor() - floor)) < spaceBtwn) {
+					if(chosen != null || (Math.abs(e.getFloor() - floor)) < spaceBtwn) {
 						chosen = e;
 						spaceBtwn = (Math.abs(e.getFloor() - floor));
 					}
 					else continue;
-					chosen = e;
 				}
 			}
 			return chosen;
@@ -203,6 +197,7 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public void start() {
+		System.out.println("I made it start");
 		es.submit(run);
 	}
 
