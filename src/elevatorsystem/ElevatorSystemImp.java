@@ -55,10 +55,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private Map<Elevator, List<Integer>> stops;
 
 	private MovingState callDirection;
+	
+	private int count = 0;
 
 	private Runnable run = () -> {
 		while(!shutdown) {
-			System.out.println("Made it to while loop in run");
 			for( Elevator e: stops.keySet()) {
 				if( !e.isIdle() || stops.get(e).isEmpty()) {
 					continue;
@@ -66,6 +67,7 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				synchronized(REQUEST_LOCK) {
 					System.out.println("I made it to moveTo");
 					List<Integer> l = stops.get(e);
+					System.out.print(l.toString());
 					e.moveTo(l.remove(0));
 				}
 			}
@@ -103,14 +105,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public Elevator callUp(int floor) {
-		call(floor, MovingState.Up);
-		return elevator;
+		return call(floor, MovingState.Up);
+		
 	}
 
 	@Override
 	public Elevator callDown(int floor) {
-		call(floor, MovingState.Down);
-		return elevator;
+		return call(floor, MovingState.Down);
 	}
 	/**
 	 * When called by callDown, this method will set the MovingState of the
@@ -119,31 +120,17 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	 * @param 	floor			Target floor
 	 * @param 	state			State to be set to
 	 */
-	private void call(int floor, MovingState state) {
-		Callable<Elevator> callElevator = () ->{
-			Elevator chosen = null;
-			int spaceBtwn = MAX_FLOOR;
-			for(Elevator e: stops.keySet()) {
-				if(e.isIdle()) {
-					if(chosen != null || (Math.abs(e.getFloor() - floor)) < spaceBtwn) {
-						chosen = e;
-						spaceBtwn = (Math.abs(e.getFloor() - floor));
-					}
-					else continue;
-				}
-			}
-			return chosen;
-		};
-		try {
-			synchronized(REQUEST_LOCK) {
-				es.submit(callElevator).get().moveTo(floor);
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
+	private Elevator call(int floor, MovingState state) {
+		Elevator ele = null;
+		for(Elevator e: stops.keySet()) {
+			if(e.id() == count)
+				ele = e;
 		}
-		callDirection = state;
+		count++;
+		synchronized(REQUEST_LOCK) {
+			ele.moveTo(floor);
+		}
+		return ele;
 	}
 
 	@Override
@@ -197,21 +184,27 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public void start() {
-		System.out.println("I made it start");
 		es.submit(run);
 	}
 
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
 
+		System.out.println("woooo");
 		synchronized(REQUEST_LOCK) {
 			List<Integer> l = stops.get(elevator);
+
+			System.out.println(l.toString());
 			IntStream.of(floors).forEach(f->l.add(f));
 			
-			if(callDirection == MovingState.Up)
-				QuickSort.sort(l, l.size());
+			
+			
+			if(elevator.getFloor() == 0)
+				QuickSort.quickSortUp(l, 0, l.size());
 			else
-				QuickSort.sortDesc(l, l.size());
+				QuickSort.quickSortDown(l, 0, l.size());
+			
+			System.out.println(l.toString());
 		}
 	}
 

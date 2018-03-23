@@ -55,7 +55,6 @@ public class ElevatorApplication extends Application implements Observer {
 
 		HBox center = new HBox();
 		Button start = new Button("Start");
-		Button stop = new Button("Stop");
 
 		for(int i = 0; i < sim.getElevatorCount(); i++) {
 			Text title = new Text("Elevator " + i);
@@ -73,8 +72,7 @@ public class ElevatorApplication extends Application implements Observer {
 		}
 
 		root.setCenter(center);
-		HBox bottom = new HBox(start, stop);
-		root.setBottom(bottom);
+		root.setBottom(start);
 
 
 
@@ -86,10 +84,6 @@ public class ElevatorApplication extends Application implements Observer {
 		start.setOnAction(e -> {
 			sim.start();
 			});
-		
-		stop.setOnAction(e -> {
-			sim.shutdown();
-		});
 		
 		new AnimationTimer() {
 
@@ -108,17 +102,17 @@ public class ElevatorApplication extends Application implements Observer {
 
 					int length = 20;
 					for(int i = 0; i < length+1; i++){
-						if(length -i == length - current.get(0))
+						if(length -i == length - current.get(1))
 							elevatorFloors.get(length - i).setId("elevator");
-						else if(length - i == length - current.get(1))
+						else if(length - i == length - current.get(2))
 							elevatorFloors.get(length - i).setId("target");
 						else
 							elevatorFloors.get(length - i).setId("empty");
 					}
 					//Sets the information passed in from elevatorimp
-					((Text) info.getChildren().get(1)).setText(current.get(0).toString());
-					((Text) info.getChildren().get(3)).setText(current.get(1).toString());
-					((Text) info.getChildren().get(5)).setText(current.get(2).toString());
+					((Text) info.getChildren().get(1)).setText(current.get(1).toString());
+					((Text) info.getChildren().get(3)).setText(current.get(2).toString());
+					((Text) info.getChildren().get(5)).setText(current.get(3).toString());
 
 				}
 			}

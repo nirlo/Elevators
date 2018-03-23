@@ -3,80 +3,74 @@ package elevatorsystem;
 import java.util.List;
 
 public class QuickSort {
-	
-	public static void sort( List<Integer> l, final int size){
-		if( l == null || l.size() < 2){
-			return;
+
+	public static void quickSortDown(List<Integer> A, int p, int r) {
+		if (p < r) {
+			int q = partitionDown(A, p, r);
+			quickSortDown(A, p, q);
+			quickSortDown(A, q + 1, r);
 		}
-		sortRecursive( l, 0, size - 1);
 	}
 
-	public static void sortRecursive( List<Integer> l, final int low, final int high){
-		// base case all data has been sorted
-		if( low > high){
-			return;
-		}
+	private static int partitionDown(List<Integer> A, int p, int r) {
+		int x = A.get(p); // pivot
+		int i = p;
+		int j = r;
+		while(true) {
+			//ignore all the numbers greater than X to left
+			while (A.get(i) > x) {
+				i++;
+			}
+			//ignore all numbers lesser than X to right
+			while (A.get(j) < x) {
+				j--;
+			}
 
-		int pivot = partition( l, low, high);
-
-		//break array on pivot point
-		sortRecursive( l, low, pivot - 1);
-		sortRecursive( l, pivot + 1, high);
-	}
-
-	private static int partition( List<Integer> l, final int low, final int high){
-		int pivot = l.get(high);// choose last element as pivot
-		int i = (low - 1); // assume left most element is smallest
-		for( int j = low; j < high; j++){// start at smallest index
-			// If current element is smaller than or equal to pivot
-			if( l.get(j) <= pivot){
-				i++;// keep track of the last partitioned number smaller than pivot
-				swap( l, i, j);// swap smaller than pivot number with index j
+			//swap a number lesser than X on left with a number greater than X on right
+			if (i < j) {
+				int temp = A.get(i);
+				A.set(i, j);
+				A.set(j, temp);
+				i++;
+				j--;
+			} else {
+				//Now the array is so sorted, that all numbers lesser than X are on right of it and greater than X are to left of it. Hence return position of X
+				return j;
 			}
 		}
-		// bring pivot to correct position
-		swap( l, i + 1, high);
-		return i + 1;
 	}
 
-	private static void swap( List<Integer> l, final int source, final int dest){
-		int num = l.get(source);
-		l.set(source, l.get(dest));
-		l.set(dest, num);
-	}
-	
-	public static void sortDesc( List<Integer> l, final int size){
-		if( l == null || l.size() < 2){
-			return;
+	public static void quickSortUp(List<Integer> A, int p, int r) {
+		if (p < r) {
+			int q = partitionUp(A, p, r);
+			quickSortUp(A, p, q);
+			quickSortUp(A, q + 1, r);
 		}
-		sortRecursiveDesc( l, 0, size - 1);
 	}
 
-	public static void sortRecursiveDesc( List<Integer> l, final int low, final int high){
-		// base case all data has been sorted
-		if( high > low){
-			return;
-		}
+	private static int partitionUp(List<Integer> A, int p, int r) {
+		int x = A.get(p); // pivot
+		int i = p;
+		int j = r;
+		while(true) {
 
-		int pivot = partitionDesc( l, low, high);
+			while (A.get(i) < x) {
+				i++;
+			}
 
-		//break array on pivot point
-		sortRecursiveDesc( l, low, pivot - 1);
-		sortRecursiveDesc( l, pivot + 1, high);
-	}
+			while (A.get(j) > x) {
+				j--;
+			}
 
-	private static int partitionDesc( List<Integer> l, final int low, final int high){
-		int pivot = l.get(low);// choose last element as pivot
-		int i = (high - 1); // assume left most element is smallest
-		for( int j = high; j < low; j++){// start at smallest index
-			// If current element is smaller than or equal to pivot
-			if( l.get(j) <= pivot){
-				i++;// keep track of the last partitioned number smaller than pivot
-				swap( l, i, j);// swap smaller than pivot number with index j
+			if (i < j) {
+				int temp = A.get(i);
+				A.set(i, j);
+				A.set(j, temp);
+				i++;
+				j--;
+			} else {
+				return j;
 			}
 		}
-		// bring pivot to correct position
-		swap( l, i + 1, high);
-		return i + 1;
 	}
 }

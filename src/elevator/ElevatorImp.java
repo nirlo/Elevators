@@ -111,10 +111,8 @@ public class ElevatorImp extends Observable implements Elevator {
 	public void moveTo(int floor) throws UnsupportedOperationException {
 		try {
 			while(currentFloor != floor){
-				
-
 				switch(getState()) {
-				case Idle: //If requestStop is called directly, this will check to see the direction the elevator should go
+				case Idle:
 					if(floor > currentFloor)
 						setState(MovingState.SlowUp);
 					else
@@ -138,10 +136,10 @@ public class ElevatorImp extends Observable implements Elevator {
 					break;
 				default:
 					UnsupportedOperationException e = new UnsupportedOperationException();
-					throw e;
+					System.out.println(e);
 				} 
 				
-				Thread.sleep(1000);
+				Thread.sleep(100);
 
 				setChanged();
 				notifyObservers(floor);
@@ -174,6 +172,7 @@ public class ElevatorImp extends Observable implements Elevator {
 
 	@Override
 	public void addPersons(int persons) {
+		System.out.println("Adding fat people");
 		if(capacity+persons <= MAX_CAPACITY_PERSONS && persons > 0) {
 			capacity += persons;
 		}
@@ -248,10 +247,10 @@ public class ElevatorImp extends Observable implements Elevator {
 		for(Observer o: observers) {
 			int power = (int) getPowerConsumed();
 			List<Integer> list = new ArrayList<Integer>();
+			list.add(ID);
 			list.add((Integer)getFloor());
 			list.add((Integer)floor);
 			list.add((Integer)power);
-			list.add(ID);
 			o.update(list);
 		}
 	}
@@ -268,6 +267,7 @@ public class ElevatorImp extends Observable implements Elevator {
 
 	@Override
 	public void requestStops(int... floors) {
+		System.out.println("What the fuck");
 		panel.requestStops(this, floors);
 	}
 
