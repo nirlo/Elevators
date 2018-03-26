@@ -61,6 +61,7 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private Runnable run = () -> {
 		while(!shutdown) {
 			for( Elevator e: stops.keySet()) {
+				int move = 0;
 				if( !e.isIdle() || stops.get(e).isEmpty()) {
 					continue;
 				}
@@ -68,8 +69,9 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 					System.out.println("I made it to moveTo");
 					List<Integer> l = stops.get(e);
 					System.out.print(l.toString());
-					e.moveTo(l.remove(0));
+					move = l.remove(0);
 				}
+				e.moveTo(move);
 			}
 			
 		}
@@ -195,14 +197,16 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 			List<Integer> l = stops.get(elevator);
 
 			System.out.println(l.toString());
-			IntStream.of(floors).forEach(f->l.add(f));
 			
 			
 			
 			if(elevator.getFloor() == 0)
-				QuickSort.quickSortUp(l, 0, l.size());
+				QuickSort.quickSort(floors, 0, floors.length-1);
 			else
-				QuickSort.quickSortDown(l, 0, l.size());
+				QuickSort.quickSortReverse(floors, 0, floors.length-1);
+			
+
+			IntStream.of(floors).forEach(f->l.add(f));
 			
 			System.out.println(l.toString());
 		}

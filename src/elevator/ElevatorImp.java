@@ -139,7 +139,7 @@ public class ElevatorImp extends Observable implements Elevator {
 					System.out.println(e);
 				} 
 				
-				Thread.sleep(100);
+				Thread.sleep(50);
 
 				setChanged();
 				notifyObservers(floor);
