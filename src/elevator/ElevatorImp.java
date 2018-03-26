@@ -106,6 +106,7 @@ public class ElevatorImp extends Observable implements Elevator {
 	 * destination.
 	 * 
 	 * @param	int						The next floor for the elevator to move to
+	 * 									Typically assigned from Elevator system
 	 */
 	@Override
 	public void moveTo(int floor) throws UnsupportedOperationException {
@@ -239,10 +240,16 @@ public class ElevatorImp extends Observable implements Elevator {
 	/**
 	 * Observer to be added to observed list
 	 * 
-	 * @param observer
+	 * @param observer					The GUI that will utilize the data to show movement of the elevator
 	 */
 	public void addObserver(Observer observer) {observers.add(observer);}
 
+	/**
+	 * Sends data to the observers, with the ID of the elevator, 
+	 * the current floor, the target floor, and the power consumed
+	 * 
+	 * @param floor						The target floor that the elevator is moving to 
+	 */
 	public void notifyObservers(int floor) {
 		for(Observer o: observers) {
 			int power = (int) getPowerConsumed();
@@ -272,7 +279,14 @@ public class ElevatorImp extends Observable implements Elevator {
 	}
 
 	
-	
+	/**
+	 * Checks to see if an elevator is the current elevator. It's a pretty simple
+	 * little thing. ID can only be assigned to one elevator. either it is or
+	 * isn't this elevator
+	 * 
+	 * @param 	Object					The Object we want to check if it is this elevator.
+	 * 									Will be cast as an elevator to check if it is this elevator
+	 */
 	public boolean equals(Object obj) {
 		if(obj instanceof ElevatorImp) {
 			ElevatorImp b = (ElevatorImp) obj; 

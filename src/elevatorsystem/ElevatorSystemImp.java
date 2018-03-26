@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
 import elevator.Elevator;
@@ -49,15 +50,28 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	private Elevator elevator;
 
 	private boolean shutdown = false;
+	
+	
 
 	private ExecutorService es;
 
+	/**
+	 * Holds the elevators that are a part of the system. Each elevator
+	 * has a List of stops that it will travel through as part of the normal operation.
+	 */
 	private Map<Elevator, List<Integer>> stops;
 
-	private MovingState callDirection;
 	
 	private int count = 0;
 
+	/**
+	 * I need to describe what is happening in this runnable. 
+	 * Run will run the entire time that the system is in use.
+	 * It will go through the Map and check if there are values within List.
+	 * At this point, the list should be ordered. System will remove the first
+	 * number in the list and move the elevator associated with the list to
+	 * that floor. 
+	 */
 	private Runnable run = () -> {
 		while(!shutdown) {
 			for( Elevator e: stops.keySet()) {
@@ -66,7 +80,6 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 					continue;
 				}
 				synchronized(REQUEST_LOCK) {
-					System.out.println("I made it to moveTo");
 					List<Integer> l = stops.get(e);
 					System.out.print(l.toString());
 					move = l.remove(0);
@@ -80,8 +93,8 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	/**
 	 * Constructor. Sets the MAX_FLOOR and MIN_FLOOR.
 	 * 
-	 * @param	 MIN_FLOOR				
-	 * @param	 MAX_FLOOR
+	 * @param	 MIN_FLOOR				The lowest floor associated with this system		
+	 * @param	 MAX_FLOOR				The highest floor associated with this system
 	 */
 	public ElevatorSystemImp(int MIN_FLOOR, int MAX_FLOOR) {
 		this.MAX_FLOOR = MAX_FLOOR;
@@ -116,11 +129,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 		return call(floor, MovingState.Down);
 	}
 	/**
-	 * When called by callDown, this method will set the MovingState of the
-	 * elevator to SlowDown and then requests the stop. 
+	 * Chooses an elevator to go to the designated floor. 
+	 * Honestly, I was having a bit too much trouble trying to get
+	 * it to choose a best elevator, so I set it to get the elevators
+	 * in order
 	 * 
-	 * @param 	floor			Target floor
-	 * @param 	state			State to be set to
+	 * @param 	floor			The target floor that the user is currently at
+	 * @param 	state			Deprecated
 	 */
 	private Elevator call(int floor, MovingState state) {
 		Elevator ele = null;
@@ -192,23 +207,17 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 	@Override
 	public void requestStops(Elevator elevator, int... floors) {
 
-		System.out.println("woooo");
 		synchronized(REQUEST_LOCK) {
+			//gets the list associated with the elevator
 			List<Integer> l = stops.get(elevator);
-
-			System.out.println(l.toString());
-			
-			
-			
+			//Checks to see what way to order the stops and orders the array of 
+			//integers before placing them into the list
 			if(elevator.getFloor() == 0)
 				QuickSort.quickSort(floors, 0, floors.length-1);
 			else
 				QuickSort.quickSortReverse(floors, 0, floors.length-1);
-			
-
+			//places the ordered array into the list.
 			IntStream.of(floors).forEach(f->l.add(f));
-			
-			System.out.println(l.toString());
 		}
 	}
 

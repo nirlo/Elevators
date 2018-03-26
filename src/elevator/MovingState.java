@@ -108,10 +108,20 @@ public enum MovingState {
 		return (this == SlowDown || this == SlowUp || this == Idle);
 	}
 	
+	/**
+	 * Checking to see if the current MovingState is Idle
+	 * 
+	 * @return	boolean				
+	 */
 	public boolean isIdle() {
 		return this==Idle;
 	}
 	
+	/**
+	 * Checking to see if the current MovingState is Off
+	 * 
+	 * @return	boolean				
+	 */
 	public boolean isOff() {
 		return this==Off;
 	}

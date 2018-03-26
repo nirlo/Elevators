@@ -3,6 +3,15 @@ package elevatorsystem;
 
 public class QuickSort {
 
+	/**
+	 * 
+	 * 
+	 * @param a					The Array to be sorted
+	 * @param left				The left most portion of the section to be sorted (begins with 0 and 
+	 * 							changes through the recursion)
+	 * @param right				The right most portion of the section to be sorted (begins as the final 
+	 * 							element in the array
+	 */
 	public static int Partition(int[] a,int left, int right) {
 		int X = a[left];
 		int i = left+1;
@@ -32,7 +41,15 @@ public class QuickSort {
 		return j;
 	}
 	
-	public static int Partition2(int a[],int left, int right) {
+	/**
+	 * 
+	 * @param a					The Array to be sorted
+	 * @param left				The left most portion of the section to be sorted (begins with 0 and 
+	 * 							changes through the recursion)
+	 * @param right				The right most portion of the section to be sorted (begins as the final 
+	 * 							element in the array
+	 */
+	public static int PartitionReverse(int a[],int left, int right) {
 		int X = a[left];
 		int i = left+1;
 		int j = right;
@@ -63,7 +80,15 @@ public class QuickSort {
 	
 
 	
-	
+	/**
+	 * Implements an O(n log n) sort
+	 * 
+	 * @param a					The Array to be sorted
+	 * @param left				The left most portion of the section to be sorted (begins with 0 and 
+	 * 							changes through the recursion)
+	 * @param right				The right most portion of the section to be sorted (begins as the final 
+	 * 							element in the array
+	 */
 	public static void quickSort(int[]a,int left,int right) {
 		
 		int k ;
@@ -75,13 +100,21 @@ public class QuickSort {
 		}
 	}
 	
-	
-public static void quickSortReverse(int[] a,int left,int right) {
+	/**
+	 * Implements an O(n log n) sort
+	 * 
+	 * @param a					The Array to be sorted
+	 * @param left				The left most portion of the section to be sorted (begins with 0 and 
+	 * 							changes through the recursion)
+	 * @param right				The right most portion of the section to be sorted (begins as the final 
+	 * 							element in the array
+	 */
+	public static void quickSortReverse(int[] a,int left,int right) {
 		
 		int k ;
 		if (left < right) {
 			
-			k = Partition2(a, left, right);
+			k = PartitionReverse(a, left, right);
 			quickSortReverse(a,left,k-1);
 			quickSortReverse(a,k+1,right);
 		}
