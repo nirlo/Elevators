@@ -20,14 +20,14 @@ public class TestElevatorSystemImp {
 	
 	@Test
 	public void addElevatorTest() {
-		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system);
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
 		system.addElevator(e);
 		assertSame(e, system.callDown(2));
 	}
 	
 	@Test
 	public void requestStopTest() {
-		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system);
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
 		system.addElevator(e);
 		system.requestStop(2, e);
 		assertEquals(system.getCurrentFloor(), 2, 0.0001);
@@ -35,7 +35,7 @@ public class TestElevatorSystemImp {
 	
 	@Test
 	public void callUpTest() {
-		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system);
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
 		system.addElevator(e);
 		system.callUp(3);
 		assertEquals(system.getCurrentFloor(), 3, 0.00001);
@@ -43,7 +43,7 @@ public class TestElevatorSystemImp {
 	
 	@Test
 	public void callDownTest() {
-		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system);
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
 		system.addElevator(e);
 		system.callDown(3);
 		assertEquals(system.getCurrentFloor(), 3, 0.00001);
@@ -66,7 +66,7 @@ public class TestElevatorSystemImp {
 	
 	@Test
 	public void getPowerConsumed() {
-		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system);
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
 		system.addElevator(e);
 		system.requestStop(3, e);
 		assertEquals(system.getPowerConsumed(), 5, 0.0001);
