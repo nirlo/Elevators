@@ -173,7 +173,6 @@ public class ElevatorImp extends Observable implements Elevator {
 
 	@Override
 	public void addPersons(int persons) {
-		System.out.println("Adding fat people");
 		if(capacity+persons <= MAX_CAPACITY_PERSONS && persons > 0) {
 			capacity += persons;
 		}
@@ -274,7 +273,6 @@ public class ElevatorImp extends Observable implements Elevator {
 
 	@Override
 	public void requestStops(int... floors) {
-		System.out.println("What the fuck");
 		panel.requestStops(this, floors);
 	}
 

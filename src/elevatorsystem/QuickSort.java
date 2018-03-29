@@ -12,7 +12,7 @@ public class QuickSort {
 	 * @param right				The right most portion of the section to be sorted (begins as the final 
 	 * 							element in the array
 	 */
-	public static int Partition(int[] a,int left, int right) {
+	private static int Partition(int[] a,int left, int right) {
 		int X = a[left];
 		int i = left+1;
 		int j = right;
@@ -49,7 +49,7 @@ public class QuickSort {
 	 * @param right				The right most portion of the section to be sorted (begins as the final 
 	 * 							element in the array
 	 */
-	public static int PartitionReverse(int a[],int left, int right) {
+	private static int PartitionReverse(int a[],int left, int right) {
 		int X = a[left];
 		int i = left+1;
 		int j = right;

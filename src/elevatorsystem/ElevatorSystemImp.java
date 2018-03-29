@@ -78,7 +78,6 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				}
 				synchronized(REQUEST_LOCK) {
 					List<Integer> l = stops.get(e);
-					System.out.print(l.toString());
 					move = l.remove(0);
 				}
 				e.moveTo(move);
@@ -111,8 +110,7 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public void requestStop(int floor, Elevator elevator) {
-		elevator.requestStop(floor);
-
+		requestStops(elevator, floor);
 	}
 
 	@Override
@@ -174,7 +172,11 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 
 	@Override
 	public double getPowerConsumed() {
-		return elevator.getPowerConsumed();
+		double total = 0;
+		for(Elevator e: stops.keySet()) {
+			total += e.getPowerConsumed();
+		}
+		return total;
 	}
 
 	@Override
@@ -215,6 +217,13 @@ public class ElevatorSystemImp extends Thread implements ElevatorSystem, Elevato
 				QuickSort.quickSortReverse(floors, 0, floors.length-1);
 			//places the ordered array into the list.
 			IntStream.of(floors).forEach(f->l.add(f));
+			
+			//removes offending floors that break the system.
+			for(Integer i:l) {
+				if(i < 0 || i > MAX_FLOOR) {
+					l.remove(i);
+				}
+			}
 		}
 	}
 

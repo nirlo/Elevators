@@ -35,6 +35,7 @@ import simulator.Observer;
  */
 public class ElevatorApplication extends Application implements Observer {
 	private Queue< List< Integer>> queue = new LinkedList<>();
+	Simulator sim = new Simulator(this);
 
 	/**
 	 * Starts the application
@@ -46,7 +47,6 @@ public class ElevatorApplication extends Application implements Observer {
 		/**
 		 * Simulator, takes in this observer and passes it through to the elevatorimp
 		 */
-		Simulator sim = new Simulator(this);
 		/**
 		 * Panes that organize the GUI
 		 */
@@ -122,7 +122,10 @@ public class ElevatorApplication extends Application implements Observer {
 		}
 	
 	
-
+		@Override
+		public void stop() {
+			sim.shutdown();
+		}
 
 		public static void main(String[] args) {
 			launch();

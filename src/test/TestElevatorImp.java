@@ -112,5 +112,17 @@ public class TestElevatorImp {
 		assertTrue(e.isEmpty());
 	}
 	
+	@Test
+	public void equalsTest() {
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
+		assertTrue(e.equals(e));
+	}
+	
+	@Test
+	public void equalsTest2() {
+		ElevatorImp e = new ElevatorImp(1, (ElevatorPanel) system, 0);
+		ElevatorImp e1 = new ElevatorImp(1, (ElevatorPanel) system, 2);
+		assertFalse(e.equals(e1));
+	}
 	
 }
